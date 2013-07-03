@@ -1,5 +1,6 @@
 package Photobooth;
 
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -7,10 +8,13 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
+import javafx.scene.input.KeyEvent;
 
 import java.io.IOException;
 import java.net.URL;
+import java.security.Key;
 import java.util.ResourceBundle;
 
 public class PhotoboothConfigController implements Initializable
@@ -45,20 +49,27 @@ public class PhotoboothConfigController implements Initializable
 	public void StartKiosk_OnClicked()
 	{
 		PhotoboothConfigModel photoboothConfig = readFormConfiguration();
-		Parent root;
 		try
 		{
-			root = FXMLLoader.load(getClass().getResource("KioskWindow.fxml"));
-			Stage stage = new Stage();
+			FXMLLoader loader = new FXMLLoader(getClass().getResource("KioskWindow.fxml"));
+			Parent root = (Parent)loader.load();
+			Scene scene = new Scene(root);
+			final Stage stage = new Stage();
 			stage.setTitle("Kiosk Mode");
-			stage.setScene(new Scene(root));
+			stage.setScene(scene);
 			stage.setFullScreen(true);
+
+			KioskWindowController kioskController = (KioskWindowController)loader.getController();
+			kioskController.setStageAndScene(stage, scene);
 			stage.showAndWait();
 		}
 		catch (IOException e)
 		{
 			e.printStackTrace();
 		}
+	}
+	private void keyPressed(KeyEvent event)
+	{
 	}
 
 	private void setFormConfiguration(PhotoboothConfigModel config)
