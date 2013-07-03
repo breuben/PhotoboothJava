@@ -9,6 +9,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.scene.input.KeyEvent;
 
@@ -49,6 +50,7 @@ public class PhotoboothConfigController implements Initializable
 	public void StartKiosk_OnClicked()
 	{
 		PhotoboothConfigModel photoboothConfig = readFormConfiguration();
+
 		try
 		{
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("KioskWindow.fxml"));
@@ -59,17 +61,16 @@ public class PhotoboothConfigController implements Initializable
 			stage.setScene(scene);
 			stage.setFullScreen(true);
 
-			KioskWindowController kioskController = (KioskWindowController)loader.getController();
+			KioskWindowController kioskController = loader.getController();
 			kioskController.setStageAndScene(stage, scene);
+			kioskController.setConfiguration(photoboothConfig);
+			stage.initModality(Modality.APPLICATION_MODAL);
 			stage.showAndWait();
 		}
 		catch (IOException e)
 		{
 			e.printStackTrace();
 		}
-	}
-	private void keyPressed(KeyEvent event)
-	{
 	}
 
 	private void setFormConfiguration(PhotoboothConfigModel config)

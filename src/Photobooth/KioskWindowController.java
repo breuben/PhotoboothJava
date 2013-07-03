@@ -11,6 +11,7 @@ import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
@@ -29,6 +30,7 @@ public class KioskWindowController implements Initializable, IDirectoryWatcherOb
 {
 	private Stage stage;
 	private Scene scene;
+	private PhotoboothConfigModel configuration;
 
 	private DirectoryWatcherThread directoryWatcherThread;
 
@@ -40,6 +42,11 @@ public class KioskWindowController implements Initializable, IDirectoryWatcherOb
 		this.stage = stage;
 		this.scene = scene;
 		setEventHandlers();
+	}
+
+	public void setConfiguration(PhotoboothConfigModel configuration)
+	{
+		this.configuration = configuration;
 	}
 
 	@Override // This method is called by the FXMLLoader when initialization is complete
@@ -59,8 +66,7 @@ public class KioskWindowController implements Initializable, IDirectoryWatcherOb
 		{
 			public void handle(final KeyEvent keyEvent)
 			{
-				if (keyEvent.getCode() == KeyCode.ESCAPE)
-				{
+				if (keyEvent.getCode() == KeyCode.ESCAPE) {
 					keyEvent.consume();
 					closeWindow();
 				}
@@ -76,10 +82,9 @@ public class KioskWindowController implements Initializable, IDirectoryWatcherOb
 
 	private void startMonitoringImageDirectory()
 	{
-		String filepath = "C:\\Captures";
 		try
 		{
-			directoryWatcherThread = new DirectoryWatcherThread(filepath, this);
+			directoryWatcherThread = new DirectoryWatcherThread(configuration.CaptureDirectory, this);
 			directoryWatcherThread.start();
 		}
 		catch (java.io.IOException e)
@@ -114,21 +119,14 @@ public class KioskWindowController implements Initializable, IDirectoryWatcherOb
 			@Override
 			public void run()
 			{
-				String promptText = "Press the button on the remote to take a picture.\nDon't forget to smile!\n茄子!";
-
-				double fontSize = 100;
-				Font englishFont = new Font("Gabriola", fontSize);
-				Font mandarinFont = new Font("FangSong", fontSize);
+				Font englishFont = new Font(configuration.FontName, configuration.FontSize);
 				kioskPane.getChildren().clear();
 
-				String[] promptLines = promptText.split("\n");
+				String[] promptLines = configuration.PromptText.split("\n");
 
 				for (String line : promptLines)
 				{
-					if(line.codePointAt(0) > 127)
-						addTextLine(line, mandarinFont);
-					else
-						addTextLine(line, englishFont);
+					addTextLine(line, englishFont);
 				}
 			}
 		});
@@ -164,21 +162,20 @@ public class KioskWindowController implements Initializable, IDirectoryWatcherOb
 				ImageView imageView = new ImageView(image);
 
 				// TODO : figure out the image scaling for ones that are too large
+				imageView.setPreserveRatio(true);
+				imageView.setSmooth(true);
+				imageView.setFitHeight(scene.getHeight());
+				imageView.setFitWidth(scene.getWidth());
 
 				kioskPane.getChildren().clear();
 				kioskPane.getChildren().add(imageView);
 			}
 		});
 
-
-
 //		Image image = imagePane.getImage();
-//		Rectangle2D screenBounds = Screen.getPrimary().getBounds();
 //
 //		if (image.getHeight() > screenBounds.getHeight() || image.getWidth() > screenBounds.getWidth())
 //		{
-//			imagePane.setFitHeight(screenBounds.getHeight());
-//			imagePane.setFitWidth(screenBounds.getWidth());
 //		}
 //		else
 //		{
