@@ -1,17 +1,12 @@
 package Photobooth;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.net.URL;
-import java.nio.file.*;
 import java.util.ResourceBundle;
 
 import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
@@ -24,7 +19,6 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 import static java.lang.Thread.sleep;
-
 
 public class KioskWindowController implements Initializable, IDirectoryWatcherObserver
 {
@@ -47,6 +41,8 @@ public class KioskWindowController implements Initializable, IDirectoryWatcherOb
 	public void setConfiguration(PhotoboothConfigModel configuration)
 	{
 		this.configuration = configuration;
+		showPrompt();
+		startMonitoringImageDirectory();
 	}
 
 	@Override // This method is called by the FXMLLoader when initialization is complete
@@ -55,9 +51,6 @@ public class KioskWindowController implements Initializable, IDirectoryWatcherOb
 		assert kioskPane != null : "fx:id=\"kioskPane\" was not injected: check your FXML file 'KioskWindow.fxml'.";
 
 		// initialize your logic here: all @FXML variables will have been injected
-
-		showPrompt();
-		startMonitoringImageDirectory();
 	}
 
 	private void setEventHandlers()
@@ -76,7 +69,8 @@ public class KioskWindowController implements Initializable, IDirectoryWatcherOb
 
 	private void closeWindow()
 	{
-		directoryWatcherThread.interrupt();
+		System.out.println("KioskWindowController.closeWindow()");
+		directoryWatcherThread.sendStopCommand();
 		stage.close();
 	}
 
@@ -146,43 +140,23 @@ public class KioskWindowController implements Initializable, IDirectoryWatcherOb
 			@Override
 			public void run()
 			{
-				FileInputStream fileInputStream;
 
-				try
-				{
-					fileInputStream = new FileInputStream(filepath);
-				}
-				catch (FileNotFoundException e)
-				{
-					System.out.println(e.getMessage());
-					return;
-				}
+				Image image = new Image("file:" + filepath);
 
-				Image image = new Image(fileInputStream);
 				ImageView imageView = new ImageView(image);
 
 				// TODO : figure out the image scaling for ones that are too large
-				imageView.setPreserveRatio(true);
-				imageView.setSmooth(true);
-				imageView.setFitHeight(scene.getHeight());
-				imageView.setFitWidth(scene.getWidth());
+				if (imageView.getImage().getHeight() > scene.getHeight() || imageView.getImage().getWidth() > scene.getWidth())
+				{
+					imageView.setPreserveRatio(true);
+					imageView.setSmooth(true);
+					imageView.setFitHeight(scene.getHeight());
+					imageView.setFitWidth(scene.getWidth());
+				}
 
 				kioskPane.getChildren().clear();
 				kioskPane.getChildren().add(imageView);
 			}
 		});
-
-//		Image image = imagePane.getImage();
-//
-//		if (image.getHeight() > screenBounds.getHeight() || image.getWidth() > screenBounds.getWidth())
-//		{
-//		}
-//		else
-//		{
-//			imagePane.setFitHeight(image.getHeight());
-//			imagePane.setFitWidth(image.getWidth());
-//		}
-//		imagePane.setVisible(false);
-//		labelPrompt.setText("Press the button on the remote to take a picture.\nDon't forget to smile!"); labelPrompt.setFont(new Font("Gabriola", 90));
 	}
 }
